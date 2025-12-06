@@ -1,6 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Send, Sparkles, Bot, User, Loader2, ChevronDown, RefreshCw } from "lucide-react";
+import {
+  ArrowLeft,
+  Send,
+  Sparkles,
+  Bot,
+  User,
+  Loader2,
+  ChevronDown,
+  RefreshCw,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 function AIAssistant() {
@@ -46,7 +55,9 @@ function AIAssistant() {
 
       const data = await response.json();
       const models = data.models
-        .filter((model) => model.supportedGenerationMethods?.includes("generateContent"))
+        .filter((model) =>
+          model.supportedGenerationMethods?.includes("generateContent")
+        )
         .map((model) => ({
           name: model.name.replace("models/", ""),
           displayName: model.displayName || model.name.replace("models/", ""),
@@ -63,9 +74,21 @@ function AIAssistant() {
       toast.error("Failed to load models. Using default.");
       // Fallback models
       const fallbackModels = [
-        { name: "gemini-1.5-flash-latest", displayName: "Gemini 1.5 Flash", description: "Fast responses" },
-        { name: "gemini-1.5-pro-latest", displayName: "Gemini 1.5 Pro", description: "Advanced reasoning" },
-        { name: "gemini-pro", displayName: "Gemini Pro", description: "General purpose" },
+        {
+          name: "gemini-1.5-flash-latest",
+          displayName: "Gemini 1.5 Flash",
+          description: "Fast responses",
+        },
+        {
+          name: "gemini-1.5-pro-latest",
+          displayName: "Gemini 1.5 Pro",
+          description: "Advanced reasoning",
+        },
+        {
+          name: "gemini-pro",
+          displayName: "Gemini Pro",
+          description: "General purpose",
+        },
       ];
       setAvailableModels(fallbackModels);
       setSelectedModel(fallbackModels[0].name);
@@ -167,7 +190,11 @@ function AIAssistant() {
               disabled={loadingModels}
               className="p-2.5 bg-gradient-to-br from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-95 disabled:opacity-50"
             >
-              <RefreshCw className={`w-5 h-5 text-white ${loadingModels ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-5 h-5 text-white ${
+                  loadingModels ? "animate-spin" : ""
+                }`}
+              />
             </button>
           </div>
 
@@ -183,10 +210,15 @@ function AIAssistant() {
                 <span className="text-sm font-medium text-gray-700">
                   {loadingModels
                     ? "Loading models..."
-                    : availableModels.find((m) => m.name === selectedModel)?.displayName || "Select Model"}
+                    : availableModels.find((m) => m.name === selectedModel)
+                        ?.displayName || "Select Model"}
                 </span>
               </div>
-              <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showModelDropdown ? 'rotate-180' : ''}`} />
+              <ChevronDown
+                className={`w-4 h-4 text-gray-500 transition-transform ${
+                  showModelDropdown ? "rotate-180" : ""
+                }`}
+              />
             </button>
 
             {showModelDropdown && (
@@ -203,10 +235,16 @@ function AIAssistant() {
                       selectedModel === model.name ? "bg-violet-100" : ""
                     }`}
                   >
-                    <div className="font-medium text-gray-900 text-sm">{model.displayName}</div>
-                    <div className="text-xs text-gray-500 mt-0.5">{model.name}</div>
+                    <div className="font-medium text-gray-900 text-sm">
+                      {model.displayName}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      {model.name}
+                    </div>
                     {model.description && (
-                      <div className="text-xs text-gray-400 mt-1">{model.description}</div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {model.description}
+                      </div>
                     )}
                   </button>
                 ))}
