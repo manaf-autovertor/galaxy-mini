@@ -12,6 +12,7 @@ import Home from "./pages/Home";
 import QueryList from "./pages/QueryList";
 import ChatWindow from "./pages/ChatWindow";
 import PlaceholderPage from "./pages/PlaceholderPage";
+import Profile from "./pages/Profile";
 
 function ProtectedRoute({ children }) {
   const token = useAuthStore((state) => state.token);
@@ -107,15 +108,7 @@ function App() {
                 />
               }
             />
-            <Route
-              path="/profile"
-              element={
-                <PlaceholderPage
-                  title="Profile"
-                  description="View and edit your profile information."
-                />
-              }
-            />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Routes>
       </Router>

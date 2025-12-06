@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useAuthStore } from "../store/authStore";
 
-// Base URL should be the domain without /api - we'll add /api to specific endpoints
+// Use environment variable for API base URL
 // const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://los_galaxy.test";
 const API_BASE_URL = "https://los_galaxy.test";
 
@@ -10,11 +10,12 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
+    "X-Requested-With": "XMLHttpRequest",
   },
-  withCredentials: true,
+  withCredentials: true, // Important for session-based auth with cookies
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token (if using token-based auth as fallback)
 api.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().token;

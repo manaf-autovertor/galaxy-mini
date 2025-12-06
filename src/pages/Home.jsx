@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import { authService } from "../services/authService";
+import { disconnectEcho } from "../services/echoService";
 import {
   FileText,
   MessageSquareText,
@@ -14,12 +16,26 @@ import {
   Zap,
   Target,
   BarChart3,
+  LogOut,
 } from "lucide-react";
 
 function Home() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const [activeNotifications] = useState(3);
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      disconnectEcho();
+      logout();
+      navigate("/login");
+    }
+  };
 
   const menuItems = [
     {
@@ -29,7 +45,7 @@ function Home() {
       icon: FileText,
       gradient: "from-blue-500 to-cyan-500",
       route: "/applications",
-      count: 24,
+      count: null,
     },
     {
       id: "queries",
@@ -38,7 +54,7 @@ function Home() {
       icon: MessageSquareText,
       gradient: "from-orange-500 to-amber-500",
       route: "/queries",
-      count: 12,
+      count: null,
     },
     {
       id: "deviations",
@@ -47,7 +63,7 @@ function Home() {
       icon: GitBranch,
       gradient: "from-purple-500 to-pink-500",
       route: "/deviations",
-      count: 5,
+      count: null,
     },
     {
       id: "requests",
@@ -56,7 +72,7 @@ function Home() {
       icon: FileCheck,
       gradient: "from-green-500 to-emerald-500",
       route: "/requests",
-      count: 8,
+      count: null,
     },
     {
       id: "analytics",
@@ -81,17 +97,17 @@ function Home() {
   const quickStats = [
     {
       label: "Today's Tasks",
-      value: "18",
+      value: "0",
       icon: Target,
       color: "text-blue-500",
     },
     {
       label: "Completion Rate",
-      value: "94%",
+      value: "3%",
       icon: BarChart3,
       color: "text-green-500",
     },
-    { label: "Active Cases", value: "32", icon: Zap, color: "text-orange-500" },
+    { label: "Active Cases", value: "0", icon: Zap, color: "text-orange-500" },
   ];
 
   return (
@@ -132,6 +148,12 @@ function Home() {
                 className="p-3 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-95 border border-gray-100"
               >
                 <Settings className="w-5 h-5 text-gray-700" />
+              </button>
+              <button
+                onClick={handleLogout}
+                className="p-3 bg-gradient-to-br from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-95"
+              >
+                <LogOut className="w-5 h-5 text-white" />
               </button>
             </div>
           </div>

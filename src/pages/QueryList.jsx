@@ -11,7 +11,7 @@ import {
 } from "../services/echoService";
 import toast from "react-hot-toast";
 import {
-  LogOut,
+  ArrowLeft,
   Search,
   MessageSquare,
   CheckCircle,
@@ -166,28 +166,19 @@ function QueryList() {
       {/* Header */}
       <div className="sticky top-0 z-20 backdrop-blur-xl bg-white/80 border-b border-white/20 shadow-lg safe-top">
         <div className="px-6 py-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <img
-                src="/logo_light.png"
-                alt="Galaxy Logo"
-                className="h-9 w-auto"
-              />
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-amber-600 bg-clip-text text-transparent">
-                  Queries
-                </h1>
-                <p className="text-xs text-gray-600">
-                  Welcome, {user?.name?.split(" ")[0]}
-                </p>
-              </div>
-            </div>
+          <div className="flex items-center gap-4 mb-4">
             <button
-              onClick={handleLogout}
-              className="p-3 bg-gradient-to-br from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-95"
+              onClick={() => navigate("/home")}
+              className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-95"
             >
-              <LogOut className="w-5 h-5 text-white" />
+              <ArrowLeft className="w-5 h-5 text-white" />
             </button>
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-amber-600 bg-clip-text text-transparent">
+                Queries
+              </h1>
+              <p className="text-xs text-gray-600">Manage your queries</p>
+            </div>
           </div>
 
           {/* Search Bar */}
