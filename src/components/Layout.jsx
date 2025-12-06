@@ -11,7 +11,7 @@ function Layout() {
     location.pathname.startsWith("/chat/");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <Outlet />
       {!hideBottomNav && <BottomNav />}
     </div>
