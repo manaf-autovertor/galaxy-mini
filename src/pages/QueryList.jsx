@@ -40,45 +40,7 @@ function QueryList() {
   useEffect(() => {
     loadQueries();
     loadCounts();
-
-    // Setup real-time listener
-    if (user?.id && token) {
-      // Initialize Echo if not already initialized
-      initializeEcho(token);
-
-      const channel = joinPresenceChannel(user.id, {
-        onUpdate: handleRealtimeUpdate,
-        here: (users) => console.log("Users here:", users),
-        joining: (user) => console.log("User joining:", user),
-        leaving: (user) => console.log("User leaving:", user),
-        error: (error) => console.error("Presence error:", error),
-      });
-
-      return () => {
-        channel?.unsubscribe();
-      };
-    }
-  }, [mainTab, subTab, user]);
-
-  const handleRealtimeUpdate = (event) => {
-    console.log("Real-time update:", event);
-
-    if (event.type === "QUERY_MESSAGE") {
-      // Reload queries and counts
-      loadQueries();
-      loadCounts();
-
-      // Play notification sound
-      const audio = new Audio("/sounds/bell.mp3");
-      audio.play().catch((e) => console.warn("Audio play failed:", e));
-
-      toast.success(event.message || "New message received");
-    } else if (event.type === "QUERY_MESSAGE_CLOSED") {
-      updateQueryStatus(event.query_id, "CLOSED");
-      loadCounts();
-      toast("Query closed", { icon: "✓" });
-    }
-  };
+  }, [mainTab, subTab]);
 
   const loadQueries = async () => {
     try {
@@ -177,7 +139,9 @@ function QueryList() {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-amber-600 bg-clip-text text-transparent">
                 Queries
               </h1>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Manage your queries</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Manage your queries
+              </p>
             </div>
           </div>
 

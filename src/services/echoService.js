@@ -6,30 +6,81 @@ window.Pusher = Pusher;
 let echoInstance = null;
 
 export const initializeEcho = (token) => {
+  // Always disconnect existing instance to ensure fresh connection
   if (echoInstance) {
-    return echoInstance;
+    console.log("Disconnecting existing Echo instance...");
+    echoInstance.disconnect();
+    echoInstance = null;
   }
 
   const config = {
     broadcaster: "reverb",
     key: import.meta.env.VITE_REVERB_APP_KEY,
     wsHost: import.meta.env.VITE_REVERB_HOST,
-    wsPort: import.meta.env.VITE_REVERB_PORT ?? 80,
-    wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
+    wsPath: import.meta.env.VITE_REVERB_PATH ?? "/reverb-ws",
+    wssPath: import.meta.env.VITE_REVERB_PATH ?? "/reverb-ws",
+    wsPort: import.meta.env.VITE_REVERB_PORT,
+    wssPort: import.meta.env.VITE_REVERB_PORT,
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? "https") === "https",
     enabledTransports: ["ws", "wss"],
-    authEndpoint: `${import.meta.env.VITE_API_BASE_URL}/broadcasting/auth`,
-    auth: {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
+    disableStats: true,
+    authorizer: (channel, options) => {
+      return {
+        authorize: (socketId, callback) => {
+          console.log(
+            "Authorizing channel:",
+            channel.name,
+            "Socket ID:",
+            socketId
+          );
+          console.log("Token:", token);
+
+          fetch(
+            `${import.meta.env.VITE_API_BASE_URL}/mobile/broadcasting/auth`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                socket_id: socketId,
+                channel_name: channel.name,
+              }),
+              credentials: "include",
+            }
+          )
+            .then((response) => {
+              console.log("Auth response status:", response.status);
+              if (!response.ok) {
+                return response.text().then((text) => {
+                  console.error("Auth failed response:", text);
+                  throw new Error(`Auth failed: ${response.status}`);
+                });
+              }
+              return response.json();
+            })
+            .then((data) => {
+              console.log("Auth response data:", data);
+              callback(null, data);
+            })
+            .catch((error) => {
+              console.error("Auth error:", error);
+              callback(error, null);
+            });
+        },
+      };
     },
   };
 
   echoInstance = new Echo(config);
 
   console.log("Echo initialized:", echoInstance);
+  console.log(
+    "Auth endpoint:",
+    `${import.meta.env.VITE_API_BASE_URL}/mobile/broadcasting/auth`
+  );
 
   return echoInstance;
 };
@@ -50,23 +101,29 @@ export const disconnectEcho = () => {
 
 export const joinPresenceChannel = (userId, callbacks = {}) => {
   const echo = getEcho();
-  const channel = echo.join(`user.${userId}`);
+  const channelName = `user.${userId}`;
 
-  if (callbacks.here) {
-    channel.here(callbacks.here);
-  }
+  console.log(`Attempting to join private channel: ${channelName}`);
+  const channel = echo.join(channelName);
 
-  if (callbacks.joining) {
-    channel.joining(callbacks.joining);
-  }
+  // Log subscription attempt
+  channel.subscription.bind("pusher:subscription_succeeded", (data) => {
+    console.log(
+      "✅ Private channel subscription succeeded:",
+      channelName,
+      data
+    );
+    if (callbacks.here) {
+      callbacks.here([]);
+    }
+  });
 
-  if (callbacks.leaving) {
-    channel.leaving(callbacks.leaving);
-  }
-
-  if (callbacks.error) {
-    channel.error(callbacks.error);
-  }
+  channel.subscription.bind("pusher:subscription_error", (error) => {
+    console.error("❌ Private channel subscription error:", channelName, error);
+    if (callbacks.error) {
+      callbacks.error(error);
+    }
+  });
 
   // Listen for SendUpdate event
   channel.listen("SendUpdate", (event) => {
@@ -75,6 +132,8 @@ export const joinPresenceChannel = (userId, callbacks = {}) => {
       callbacks.onUpdate(event);
     }
   });
+
+  console.log("Channel subscription object:", channel.subscription);
 
   return channel;
 };

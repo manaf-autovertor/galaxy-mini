@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { authService } from "../services/authService";
-import { initializeEcho } from "../services/echoService";
 import toast from "react-hot-toast";
 import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 
@@ -28,9 +27,6 @@ function Login() {
 
       if (data.token && data.user) {
         setAuth(data.token, data.user);
-
-        // Initialize Echo with token
-        initializeEcho(data.token);
 
         toast.success("Login successful!");
         navigate("/home");
@@ -59,8 +55,12 @@ function Login() {
               className="w-full h-full object-contain drop-shadow-2xl"
             />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Galaxy</h1>
-          <p className="text-gray-600 dark:text-gray-400">Sign in to continue</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Galaxy
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Sign in to continue
+          </p>
         </div>
 
         {/* Login Card */}

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -5,7 +6,13 @@ import {
   Navigate,
 } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useAuthStore } from "./store/authStore";
+import {
+  initializeEcho,
+  joinPresenceChannel,
+  getEcho,
+} from "./services/echoService";
 import Layout from "./components/Layout";
 import InstallPrompt from "./components/InstallPrompt";
 import OfflineIndicator from "./components/OfflineIndicator";
@@ -23,6 +30,70 @@ function ProtectedRoute({ children }) {
 }
 
 function App() {
+  const token = useAuthStore((state) => state.token);
+  const user = useAuthStore((state) => state.user);
+
+  useEffect(() => {
+    // Initialize Echo and connect to presence channel if user is already logged in
+    if (token && user?.id) {
+      console.log("User already logged in, connecting to presence channel...");
+      console.log("Token:", token);
+      console.log("User ID:", user.id);
+
+      try {
+        // Initialize Echo (will return existing instance if already initialized)
+        const echo = initializeEcho(token);
+        console.log("Echo instance:", echo);
+
+        // Join private channel for global notifications
+        console.log(`Joining private channel for user: ${user.id}`);
+        const channel = joinPresenceChannel(user.id, {
+          onUpdate: (event) => {
+            console.log("Global notification received:", event);
+
+            // Show toast notification based on event type
+            if (event.type === "QUERY_MESSAGE") {
+              toast(event.message || "New message received", {
+                icon: "🔔",
+                duration: 4000,
+              });
+            } else if (event.type === "QUERY_MESSAGE_CLOSED") {
+              toast("Query closed", {
+                icon: "✓",
+                duration: 3000,
+              });
+            } else if (event.message) {
+              toast(event.message, {
+                icon: "🔔",
+                duration: 4000,
+              });
+            }
+
+            // Play notification sound
+            const audio = new Audio("/sounds/bell.mp3");
+            audio.play().catch((e) => console.warn("Audio play failed:", e));
+          },
+          here: () => {
+            console.log("✅ Successfully joined private channel!");
+          },
+          error: (error) => {
+            console.error("❌ Private channel error:", error);
+          },
+        });
+
+        console.log("Channel object:", channel);
+
+        // Cleanup on unmount or when user/token changes
+        return () => {
+          console.log("Cleaning up presence channel...");
+          channel?.unsubscribe();
+        };
+      } catch (error) {
+        console.error("❌ Failed to initialize Echo or join channel:", error);
+      }
+    }
+  }, [token, user]);
+
   return (
     <>
       <OfflineIndicator />
