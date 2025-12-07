@@ -99,7 +99,13 @@ export const disconnectEcho = () => {
   }
 };
 
-export const joinPresenceChannel = (userId, callbacks = {}) => {
+export const joinPresenceChannel = (userId, callbacks = {}, token = null) => {
+  // Initialize Echo if not already initialized and token is provided
+  if (!echoInstance && token) {
+    console.log("Echo not initialized, initializing now...");
+    initializeEcho(token);
+  }
+
   const echo = getEcho();
   const channelName = `user.${userId}`;
 

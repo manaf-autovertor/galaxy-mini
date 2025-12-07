@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { useQueryStore } from "../store/queryStore";
 import { queryService } from "../services/queryService";
-import { joinPresenceChannel } from "../services/echoService";
+import { joinPresenceChannel, initializeEcho } from "../services/echoService";
 import toast from "react-hot-toast";
 import {
   ArrowLeft,
@@ -27,6 +27,7 @@ function ChatWindow() {
   const { queryId } = useParams();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
 
   const selectedQuery = useQueryStore((state) => state.selectedQuery);
   const messages = useQueryStore((state) => state.messages);
@@ -46,51 +47,42 @@ function ChatWindow() {
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    loadQueryDetails();
-    loadMessages();
+  const handleRealtimeUpdate = useCallback(
+    async (event) => {
+      console.log("Chat real-time update:", event);
+      console.log("Current queryId:", queryId);
 
-    // Setup real-time listener
-    if (user?.id) {
-      const channel = joinPresenceChannel(user.id, {
-        onUpdate: handleRealtimeUpdate,
-      });
+      const eventQueryId = event.current_query_id || event.query_id;
 
-      return () => {
-        channel?.unsubscribe();
-      };
-    }
-  }, [queryId, user]);
+      if (event.type === "QUERY_MESSAGE" && event.current_query_id == queryId) {
+        console.log("Processing QUERY_MESSAGE event, reloading messages...");
+        // Reload messages to get the latest data
+        try {
+          const data = await queryService.getMessages(queryId);
+          setMessages(data);
+          console.log("Messages reloaded successfully");
+        } catch (error) {
+          console.error("Failed to reload messages:", error);
+        }
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const handleRealtimeUpdate = (event) => {
-    console.log("Chat real-time update:", event);
-
-    if (event.type === "QUERY_MESSAGE" && event.query_id == queryId) {
-      // Add new message to list
-      if (event.message) {
-        addMessage(event.message);
-      } else {
-        loadMessages(); // Fallback
+        // Play notification sound
+        const audio = new Audio("/sounds/bell.mp3");
+        audio.play().catch((e) => console.warn("Audio play failed:", e));
+      } else if (
+        event.type === "QUERY_MESSAGE_CLOSED" &&
+        eventQueryId == queryId
+      ) {
+        updateQueryStatus(queryId, "CLOSED");
+        setSelectedQuery((prev) =>
+          prev ? { ...prev, status: "CLOSED" } : prev
+        );
+        toast("Query closed", { icon: "✓" });
       }
+    },
+    [queryId, setMessages, updateQueryStatus, setSelectedQuery]
+  );
 
-      // Play notification sound
-      const audio = new Audio("/sounds/bell.mp3");
-      audio.play().catch((e) => console.warn("Audio play failed:", e));
-    } else if (
-      event.type === "QUERY_MESSAGE_CLOSED" &&
-      event.query_id == queryId
-    ) {
-      updateQueryStatus(queryId, "CLOSED");
-      setSelectedQuery({ ...selectedQuery, status: "CLOSED" });
-      toast("Query closed", { icon: "✓" });
-    }
-  };
-
-  const loadQueryDetails = async () => {
+  const loadQueryDetails = useCallback(async () => {
     try {
       setLoading(true);
       const data = await queryService.getQuery(queryId);
@@ -101,9 +93,9 @@ function ChatWindow() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [queryId, setSelectedQuery]);
 
-  const loadMessages = async () => {
+  const loadMessages = useCallback(async () => {
     try {
       const data = await queryService.getMessages(queryId);
       setMessages(data);
@@ -111,7 +103,41 @@ function ChatWindow() {
       console.error("Failed to load messages:", error);
       toast.error("Failed to load messages");
     }
-  };
+  }, [queryId, setMessages]);
+
+  useEffect(() => {
+    loadQueryDetails();
+    loadMessages();
+  }, [loadQueryDetails, loadMessages]);
+
+  useEffect(() => {
+    // Setup real-time listener
+    if (user?.id && token) {
+      try {
+        // Ensure Echo is initialized
+        initializeEcho(token);
+
+        const channel = joinPresenceChannel(
+          user.id,
+          {
+            onUpdate: handleRealtimeUpdate,
+          },
+          token
+        );
+
+        return () => {
+          // channel?.unsubscribe();
+        };
+      } catch (error) {
+        console.error("Failed to setup real-time listener:", error);
+      }
+    }
+  }, [queryId, user?.id, token, handleRealtimeUpdate]);
+
+  useEffect(() => {
+    console.log("Messages updated in ChatWindow:", messages.length, messages);
+    scrollToBottom();
+  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -272,25 +298,33 @@ function ChatWindow() {
         {showDetails && (
           <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-gray-900 dark:text-gray-100 px-6 py-4 border-t border-gray-200 dark:border-gray-700 text-sm space-y-3 shadow-inner">
             <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-700 rounded-2xl shadow-sm">
-              <span className="text-gray-600 dark:text-gray-300 font-medium">Application ID:</span>
+              <span className="text-gray-600 dark:text-gray-300 font-medium">
+                Application ID:
+              </span>
               <span className="font-bold text-gray-900 dark:text-white">
                 {selectedQuery?.application_id}
               </span>
             </div>
-            <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-700 rounded-2xl shadow-sm">
-              <span className="text-gray-600 dark:text-gray-300 font-medium">Type:</span>
+            {/* <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-700 rounded-2xl shadow-sm">
+              <span className="text-gray-600 dark:text-gray-300 font-medium">
+                Type:
+              </span>
               <span className="font-bold text-gray-900 dark:text-white">
                 {selectedQuery?.query_type}
               </span>
-            </div>
+            </div> */}
             <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-700 rounded-2xl shadow-sm">
-              <span className="text-gray-600 dark:text-gray-300 font-medium">Subcategory:</span>
+              <span className="text-gray-600 dark:text-gray-300 font-medium">
+                Subcategory:
+              </span>
               <span className="font-bold text-gray-900 dark:text-white">
                 {selectedQuery?.query_subcategory}
               </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-700 rounded-2xl shadow-sm">
-              <span className="text-gray-600 dark:text-gray-300 font-medium">Created:</span>
+              <span className="text-gray-600 dark:text-gray-300 font-medium">
+                Created:
+              </span>
               <span className="font-bold text-gray-900 dark:text-white">
                 {format(
                   new Date(selectedQuery?.created_at),
@@ -325,7 +359,9 @@ function ChatWindow() {
               <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
                 <FileText className="w-10 h-10 text-indigo-600" />
               </div>
-              <p className="text-gray-900 dark:text-white font-bold text-lg">No messages yet</p>
+              <p className="text-gray-900 dark:text-white font-bold text-lg">
+                No messages yet
+              </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 Start the conversation
               </p>
@@ -405,7 +441,9 @@ function ChatWindow() {
 
                     <span
                       className={`text-xs mt-1 px-1 ${
-                        isOwnMessage ? "text-gray-600 dark:text-gray-400" : "text-gray-500 dark:text-gray-400"
+                        isOwnMessage
+                          ? "text-gray-600 dark:text-gray-400"
+                          : "text-gray-500 dark:text-gray-400"
                       }`}
                     >
                       {formatMessageDate(message.created_at)}
