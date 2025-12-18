@@ -77,7 +77,7 @@ function Home() {
     },
     {
       id: "requests",
-      title: "Requests",
+      title: "Pending Requests",
       description: "Pending requests",
       icon: "checkmark-done",
       colors: ["#22c55e", "#10b981"],
