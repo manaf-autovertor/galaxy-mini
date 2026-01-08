@@ -30,11 +30,11 @@ function DocumentUploadDetail() {
   const [customerType, setCustomerType] = useState("");
   const [selectedProfileId, setSelectedProfileId] = useState("");
   const [profileOptions, setProfileOptions] = useState([]);
-  const [imageMode, setImageMode] = useState("UPLOAD");
+  // const [imageMode, setImageMode] = useState("UPLOAD");
   const [attachments, setAttachments] = useState([]);
-  const [cameraActive, setCameraActive] = useState(false);
-  const [capturedImage, setCapturedImage] = useState(null);
-  const [stream, setStream] = useState(null);
+  // const [cameraActive, setCameraActive] = useState(false);
+  // const [capturedImage, setCapturedImage] = useState(null);
+  // const [stream, setStream] = useState(null);
 
   const doctypes = {
     KYC: [
@@ -72,9 +72,9 @@ function DocumentUploadDetail() {
 
   useEffect(() => {
     loadApplication();
-    return () => {
-      stopCamera();
-    };
+    // return () => {
+    //   stopCamera();
+    // };
   }, [applicationId]);
 
   useEffect(() => {
@@ -162,48 +162,48 @@ function DocumentUploadDetail() {
     setAttachments(attachments.filter((_, i) => i !== index));
   };
 
-  const startCamera = async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-      setStream(mediaStream);
-      setCameraActive(true);
-    } catch (error) {
-      console.error("Error accessing camera:", error);
-      toast.error("Unable to access camera");
-    }
-  };
+  // const startCamera = async () => {
+  //   try {
+  //     const mediaStream = await navigator.mediaDevices.getUserMedia({
+  //       video: { facingMode: "environment" },
+  //     });
+  //     if (videoRef.current) {
+  //       videoRef.current.srcObject = mediaStream;
+  //     }
+  //     setStream(mediaStream);
+  //     setCameraActive(true);
+  //   } catch (error) {
+  //     console.error("Error accessing camera:", error);
+  //     toast.error("Unable to access camera");
+  //   }
+  // };
 
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
-    }
-    setCameraActive(false);
-  };
+  // const stopCamera = () => {
+  //   if (stream) {
+  //     stream.getTracks().forEach((track) => track.stop());
+  //     setStream(null);
+  //   }
+  //   setCameraActive(false);
+  // };
 
-  const captureImage = () => {
-    if (videoRef.current && canvasRef.current) {
-      const canvas = canvasRef.current;
-      const video = videoRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(video, 0, 0);
+  // const captureImage = () => {
+  //   if (videoRef.current && canvasRef.current) {
+  //     const canvas = canvasRef.current;
+  //     const video = videoRef.current;
+  //     canvas.width = video.videoWidth;
+  //     canvas.height = video.videoHeight;
+  //     const ctx = canvas.getContext("2d");
+  //     ctx.drawImage(video, 0, 0);
 
-      canvas.toBlob((blob) => {
-        const file = new File([blob], `capture_${Date.now()}.jpg`, {
-          type: "image/jpeg",
-        });
-        setCapturedImage(file);
-        stopCamera();
-      }, "image/jpeg");
-    }
-  };
+  //     canvas.toBlob((blob) => {
+  //       const file = new File([blob], `capture_${Date.now()}.jpg`, {
+  //         type: "image/jpeg",
+  //       });
+  //       setCapturedImage(file);
+  //       stopCamera();
+  //     }, "image/jpeg");
+  //   }
+  // };
 
   const handleSubmit = async () => {
     // Validation
@@ -232,15 +232,15 @@ function DocumentUploadDetail() {
       return;
     }
 
-    if (imageMode === "UPLOAD" && attachments.length === 0) {
+    if (attachments.length === 0) {
       toast.error("Please upload a file");
       return;
     }
 
-    if (imageMode === "TAKE" && !capturedImage) {
-      toast.error("Please capture an image");
-      return;
-    }
+    // if (imageMode === "TAKE" && !capturedImage) {
+    //   toast.error("Please capture an image");
+    //   return;
+    // }
 
     setUploading(true);
 
@@ -259,13 +259,17 @@ function DocumentUploadDetail() {
         formData.append("query_id", queryId);
       }
 
-      if (imageMode === "UPLOAD") {
-        attachments.forEach((file, index) => {
-          formData.append(`files[${index}]`, file);
-        });
-      } else {
-        formData.append("files[0]", capturedImage);
-      }
+      attachments.forEach((file, index) => {
+        formData.append(`files[${index}]`, file);
+      });
+
+      // if (imageMode === "UPLOAD") {
+      //   attachments.forEach((file, index) => {
+      //     formData.append(`files[${index}]`, file);
+      //   });
+      // } else {
+      //   formData.append("files[0]", capturedImage);
+      // }
 
       const response = await api.post("/api/mobile/upload-document", formData, {
         headers: {
@@ -404,12 +408,8 @@ function DocumentUploadDetail() {
                     {name}
                   </option>
                 ))}
-              </select>
-            </div>
-          )}
-
-          {/* Image Mode Toggle */}
-          <div className="bg-white rounded-2xl p-3 shadow-md border border-gray-100">
+              </select>- Commented out as mobile native file picker handles this */}
+          {/* <div className="bg-white rounded-2xl p-3 shadow-md border border-gray-100">
             <label className="block text-xs font-semibold text-gray-700 mb-2">
               Upload Method
             </label>
@@ -444,7 +444,10 @@ function DocumentUploadDetail() {
                 Camera
               </button>
             </div>
-          </div>
+          </div> */}
+
+          {/* File Upload */}
+        </div>
 
           {/* File Upload */}
           {imageMode === "UPLOAD" && (
@@ -487,13 +490,9 @@ function DocumentUploadDetail() {
                       </button>
                     </div>
                   ))}
-                </div>
-              )}
-            </div>
-          )}
 
-          {/* Camera Capture */}
-          {imageMode === "TAKE" && (
+          {/* Camera Capture - Commented out as mobile native file picker handles this */}
+          {/* {imageMode === "TAKE" && (
             <div className="bg-white rounded-2xl p-3 shadow-md border border-gray-100">
               <label className="block text-xs font-semibold text-gray-700 mb-2">
                 Capture Image *
@@ -561,6 +560,9 @@ function DocumentUploadDetail() {
                 </div>
               )}
 
+              <canvas ref={canvasRef} className="hidden" />
+            </div>
+          )} */
               <canvas ref={canvasRef} className="hidden" />
             </div>
           )}
