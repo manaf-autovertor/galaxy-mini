@@ -116,8 +116,14 @@ function App() {
             <Route path="/queries" element={<QueryList />} />
             <Route path="/chat/:queryId" element={<ChatWindow />} />
             <Route path="/doc-upload" element={<DocUpload />} />
-            <Route path="/doc-upload/:applicationId" element={<DocumentUploadDetail />} />
-            <Route path="/doc-upload/:applicationId/:queryId" element={<DocumentUploadDetail />} />
+            <Route
+              path="/doc-upload/:applicationId"
+              element={<DocumentUploadDetail />}
+            />
+            <Route
+              path="/doc-upload/:applicationId/:queryId"
+              element={<DocumentUploadDetail />}
+            />
             <Route
               path="/applications"
               element={

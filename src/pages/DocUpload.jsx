@@ -79,9 +79,12 @@ function DocUpload() {
   const getStatusBadgeColor = (status) => {
     if (!status) return "bg-gray-100 text-gray-700";
     const statusLower = String(status).toLowerCase();
-    if (statusLower.includes("approved") || statusLower.includes("disburs")) return "bg-green-100 text-green-700";
-    if (statusLower.includes("pending") || statusLower.includes("progress")) return "bg-yellow-100 text-yellow-700";
-    if (statusLower.includes("rejected") || statusLower.includes("cancel")) return "bg-red-100 text-red-700";
+    if (statusLower.includes("approved") || statusLower.includes("disburs"))
+      return "bg-green-100 text-green-700";
+    if (statusLower.includes("pending") || statusLower.includes("progress"))
+      return "bg-yellow-100 text-yellow-700";
+    if (statusLower.includes("rejected") || statusLower.includes("cancel"))
+      return "bg-red-100 text-red-700";
     return "bg-blue-100 text-blue-700";
   };
 
@@ -162,14 +165,17 @@ function DocUpload() {
                   </div>
 
                   {/* Status Badge */}
-                  {(application.app_current_status_final || application.app_status) && (
+                  {(application.app_current_status_final ||
+                    application.app_status) && (
                     <div className="mb-4">
                       <span
                         className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${getStatusBadgeColor(
-                          application.app_current_status_final || application.app_status
+                          application.app_current_status_final ||
+                            application.app_status
                         )}`}
                       >
-                        {application.app_current_status_final || application.app_status}
+                        {application.app_current_status_final ||
+                          application.app_status}
                       </span>
                     </div>
                   )}

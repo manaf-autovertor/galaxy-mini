@@ -93,7 +93,9 @@ function DocumentUploadDetail() {
   const loadApplication = async () => {
     setLoading(true);
     try {
-      const response = await api.get(`/api/mobile/applications/${applicationId}`);
+      const response = await api.get(
+        `/api/mobile/applications/${applicationId}`
+      );
       if (response.data.success) {
         setApplication(response.data.data);
       }
@@ -113,19 +115,25 @@ function DocumentUploadDetail() {
     switch (customerType) {
       case "CUSTOMER":
         if (application.customer) {
-          options[application.customer.id] = `${application.customer.profile_first_name || ""} (${application.customer.id})`;
+          options[application.customer.id] = `${
+            application.customer.profile_first_name || ""
+          } (${application.customer.id})`;
         }
         break;
       case "GUARANTOR":
         if (application.guarantor) {
-          options[application.guarantor.id] = `${application.guarantor.profile_first_name || ""} (${application.guarantor.id})`;
+          options[application.guarantor.id] = `${
+            application.guarantor.profile_first_name || ""
+          } (${application.guarantor.id})`;
         }
         break;
       case "COAPPLICANT":
         if (application.coapplicants && application.coapplicants.length > 0) {
           application.coapplicants.forEach((co) => {
             if (co.profile) {
-              options[co.profile.id] = `${co.profile.profile_first_name || ""} (${co.profile.id})`;
+              options[co.profile.id] = `${
+                co.profile.profile_first_name || ""
+              } (${co.profile.id})`;
             }
           });
         }
@@ -457,9 +465,7 @@ function DocumentUploadDetail() {
                 className="w-full px-3 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-indigo-500 transition-all flex flex-col items-center gap-1.5"
               >
                 <Upload className="w-6 h-6 text-gray-400" />
-                <span className="text-xs text-gray-600">
-                  Click to upload
-                </span>
+                <span className="text-xs text-gray-600">Click to upload</span>
               </button>
 
               {attachments.length > 0 && (
