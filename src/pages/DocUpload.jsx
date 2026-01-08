@@ -14,6 +14,9 @@ import {
   Upload,
   Calendar,
   ExternalLink,
+  Search,
+  X,
+  Filter,
 } from "lucide-react";
 import api from "../services/api";
 import toast from "react-hot-toast";
@@ -30,6 +33,13 @@ function DocUpload() {
     currentPage: 1,
   });
 
+  // Search state
+  const [search, setSearch] = useState("");
+  const [applicationId, setApplicationId] = useState("");
+  const [status, setStatus] = useState("");
+  const [phone, setPhone] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+
   useEffect(() => {
     loadApplications(currentPage);
   }, [currentPage]);
@@ -37,11 +47,19 @@ function DocUpload() {
   const loadApplications = async (page = 1) => {
     setLoading(true);
     try {
+      const params = {
+        page: page,
+        per_page: 15,
+      };
+
+      // Add search parameters if they exist
+      if (search) params.search = search;
+      if (applicationId) params.application_id = applicationId;
+      if (status) params.status = status;
+      if (phone) params.phone = phone;
+
       const response = await api.get("/api/mobile/applications", {
-        params: {
-          page: page,
-          per_page: 15,
-        },
+        params,
       });
 
       if (response.data.success) {
@@ -67,6 +85,22 @@ function DocUpload() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
+
+  const handleSearch = () => {
+    setCurrentPage(1);
+    loadApplications(1);
+  };
+
+  const handleClearFilters = () => {
+    setSearch("");
+    setApplicationId("");
+    setStatus("");
+    setPhone("");
+    setCurrentPage(1);
+    loadApplications(1);
+  };
+
+  const hasActiveFilters = search || applicationId || status || phone;
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -109,6 +143,103 @@ function DocUpload() {
                 {pagination.total} Applications
               </p>
             </div>
+          </div>
+
+          {/* Search Bar */}
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by name, email, ID, phone..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                />
+              </div>
+              <button
+                onClick={handleSearch}
+                className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl text-sm font-semibold hover:shadow-lg transition-all active:scale-95"
+              >
+                Search
+              </button>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all active:scale-95 flex items-center gap-2 ${
+                  showFilters || hasActiveFilters
+                    ? "bg-indigo-100 text-indigo-700"
+                    : "bg-white border border-gray-200 text-gray-700"
+                }`}
+              >
+                <Filter className="w-4 h-4" />
+                {hasActiveFilters && (
+                  <span className="w-2 h-2 bg-indigo-600 rounded-full" />
+                )}
+              </button>
+            </div>
+
+            {/* Advanced Filters */}
+            {showFilters && (
+              <div className="bg-white rounded-2xl p-4 border border-gray-200 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-gray-600 mb-1 block">
+                      Application ID
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter ID"
+                      value={applicationId}
+                      onChange={(e) => setApplicationId(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-600 mb-1 block">
+                      Status
+                    </label>
+                    <select
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    >
+                      <option value="">All Status</option>
+                      <option value="pending">Pending</option>
+                      <option value="approved">Approved</option>
+                      <option value="rejected">Rejected</option>
+                      <option value="disbursed">Disbursed</option>
+                      <option value="in_progress">In Progress</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-600 mb-1 block">
+                      Phone Number
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {hasActiveFilters && (
+                  <button
+                    onClick={handleClearFilters}
+                    className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700 font-semibold transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                    Clear All Filters
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
