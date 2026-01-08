@@ -103,6 +103,34 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
+
+          {/* Routes without bottom navigation */}
+          <Route
+            path="/doc-upload"
+            element={
+              <ProtectedRoute>
+                <DocUpload />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/doc-upload/:applicationId"
+            element={
+              <ProtectedRoute>
+                <DocumentUploadDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/doc-upload/:applicationId/:queryId"
+            element={
+              <ProtectedRoute>
+                <DocumentUploadDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Routes with Layout (includes bottom navigation) */}
           <Route
             element={
               <ProtectedRoute>
@@ -115,15 +143,6 @@ function App() {
             <Route path="/ai-assistant" element={<AIAssistant />} />
             <Route path="/queries" element={<QueryList />} />
             <Route path="/chat/:queryId" element={<ChatWindow />} />
-            <Route path="/doc-upload" element={<DocUpload />} />
-            <Route
-              path="/doc-upload/:applicationId"
-              element={<DocumentUploadDetail />}
-            />
-            <Route
-              path="/doc-upload/:applicationId/:queryId"
-              element={<DocumentUploadDetail />}
-            />
             <Route
               path="/applications"
               element={

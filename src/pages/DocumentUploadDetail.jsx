@@ -30,11 +30,11 @@ function DocumentUploadDetail() {
   const [customerType, setCustomerType] = useState("");
   const [selectedProfileId, setSelectedProfileId] = useState("");
   const [profileOptions, setProfileOptions] = useState([]);
-  const [imageMode, setImageMode] = useState("UPLOAD");
+  // const [imageMode, setImageMode] = useState("UPLOAD");
   const [attachments, setAttachments] = useState([]);
-  const [cameraActive, setCameraActive] = useState(false);
-  const [capturedImage, setCapturedImage] = useState(null);
-  const [stream, setStream] = useState(null);
+  // const [cameraActive, setCameraActive] = useState(false);
+  // const [capturedImage, setCapturedImage] = useState(null);
+  // const [stream, setStream] = useState(null);
 
   const doctypes = {
     KYC: [
@@ -72,9 +72,9 @@ function DocumentUploadDetail() {
 
   useEffect(() => {
     loadApplication();
-    return () => {
-      stopCamera();
-    };
+    // return () => {
+    //   stopCamera();
+    // };
   }, [applicationId]);
 
   useEffect(() => {
@@ -162,48 +162,48 @@ function DocumentUploadDetail() {
     setAttachments(attachments.filter((_, i) => i !== index));
   };
 
-  const startCamera = async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-      setStream(mediaStream);
-      setCameraActive(true);
-    } catch (error) {
-      console.error("Error accessing camera:", error);
-      toast.error("Unable to access camera");
-    }
-  };
+  // const startCamera = async () => {
+  //   try {
+  //     const mediaStream = await navigator.mediaDevices.getUserMedia({
+  //       video: { facingMode: "environment" },
+  //     });
+  //     if (videoRef.current) {
+  //       videoRef.current.srcObject = mediaStream;
+  //     }
+  //     setStream(mediaStream);
+  //     setCameraActive(true);
+  //   } catch (error) {
+  //     console.error("Error accessing camera:", error);
+  //     toast.error("Unable to access camera");
+  //   }
+  // };
 
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
-    }
-    setCameraActive(false);
-  };
+  // const stopCamera = () => {
+  //   if (stream) {
+  //     stream.getTracks().forEach((track) => track.stop());
+  //     setStream(null);
+  //   }
+  //   setCameraActive(false);
+  // };
 
-  const captureImage = () => {
-    if (videoRef.current && canvasRef.current) {
-      const canvas = canvasRef.current;
-      const video = videoRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(video, 0, 0);
+  // const captureImage = () => {
+  //   if (videoRef.current && canvasRef.current) {
+  //     const canvas = canvasRef.current;
+  //     const video = videoRef.current;
+  //     canvas.width = video.videoWidth;
+  //     canvas.height = video.videoHeight;
+  //     const ctx = canvas.getContext("2d");
+  //     ctx.drawImage(video, 0, 0);
 
-      canvas.toBlob((blob) => {
-        const file = new File([blob], `capture_${Date.now()}.jpg`, {
-          type: "image/jpeg",
-        });
-        setCapturedImage(file);
-        stopCamera();
-      }, "image/jpeg");
-    }
-  };
+  //     canvas.toBlob((blob) => {
+  //       const file = new File([blob], `capture_${Date.now()}.jpg`, {
+  //         type: "image/jpeg",
+  //       });
+  //       setCapturedImage(file);
+  //       stopCamera();
+  //     }, "image/jpeg");
+  //   }
+  // };
 
   const handleSubmit = async () => {
     // Validation
@@ -232,15 +232,15 @@ function DocumentUploadDetail() {
       return;
     }
 
-    if (imageMode === "UPLOAD" && attachments.length === 0) {
+    if (attachments.length === 0) {
       toast.error("Please upload a file");
       return;
     }
 
-    if (imageMode === "TAKE" && !capturedImage) {
-      toast.error("Please capture an image");
-      return;
-    }
+    // if (imageMode === "TAKE" && !capturedImage) {
+    //   toast.error("Please capture an image");
+    //   return;
+    // }
 
     setUploading(true);
 
@@ -259,13 +259,17 @@ function DocumentUploadDetail() {
         formData.append("query_id", queryId);
       }
 
-      if (imageMode === "UPLOAD") {
-        attachments.forEach((file, index) => {
-          formData.append(`files[${index}]`, file);
-        });
-      } else {
-        formData.append("files[0]", capturedImage);
-      }
+      attachments.forEach((file, index) => {
+        formData.append(`files[${index}]`, file);
+      });
+
+      // if (imageMode === "UPLOAD") {
+      //   attachments.forEach((file, index) => {
+      //     formData.append(`files[${index}]`, file);
+      //   });
+      // } else {
+      //   formData.append("files[0]", capturedImage);
+      // }
 
       const response = await api.post("/api/mobile/upload-document", formData, {
         headers: {
@@ -408,8 +412,8 @@ function DocumentUploadDetail() {
             </div>
           )}
 
-          {/* Image Mode Toggle */}
-          <div className="bg-white rounded-2xl p-3 shadow-md border border-gray-100">
+          {/* Upload Method - Commented out as mobile native file picker handles this */}
+          {/* <div className="bg-white rounded-2xl p-3 shadow-md border border-gray-100">
             <label className="block text-xs font-semibold text-gray-700 mb-2">
               Upload Method
             </label>
@@ -444,56 +448,54 @@ function DocumentUploadDetail() {
                 Camera
               </button>
             </div>
-          </div>
+          </div> */}
 
           {/* File Upload */}
-          {imageMode === "UPLOAD" && (
-            <div className="bg-white rounded-2xl p-3 shadow-md border border-gray-100">
-              <label className="block text-xs font-semibold text-gray-700 mb-2">
-                Select File *
-              </label>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                onChange={handleFileSelect}
-                accept="image/*,.pdf"
-                className="hidden"
-              />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full px-3 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-indigo-500 transition-all flex flex-col items-center gap-1.5"
-              >
-                <Upload className="w-6 h-6 text-gray-400" />
-                <span className="text-xs text-gray-600">Click to upload</span>
-              </button>
+          <div className="bg-white rounded-2xl p-3 shadow-md border border-gray-100">
+            <label className="block text-xs font-semibold text-gray-700 mb-2">
+              Select File *
+            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              onChange={handleFileSelect}
+              accept="image/*,.pdf"
+              className="hidden"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full px-3 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-indigo-500 transition-all flex flex-col items-center gap-1.5"
+            >
+              <Upload className="w-6 h-6 text-gray-400" />
+              <span className="text-xs text-gray-600">Click to upload</span>
+            </button>
 
-              {attachments.length > 0 && (
-                <div className="mt-2 space-y-1.5">
-                  {attachments.map((file, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-2 p-2 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl"
+            {attachments.length > 0 && (
+              <div className="mt-2 space-y-1.5">
+                {attachments.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 p-2 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl"
+                  >
+                    <FileText className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                    <span className="flex-1 text-xs font-medium text-gray-700 truncate">
+                      {file.name}
+                    </span>
+                    <button
+                      onClick={() => removeAttachment(index)}
+                      className="p-0.5 hover:bg-white rounded-full transition-colors flex-shrink-0"
                     >
-                      <FileText className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-                      <span className="flex-1 text-xs font-medium text-gray-700 truncate">
-                        {file.name}
-                      </span>
-                      <button
-                        onClick={() => removeAttachment(index)}
-                        className="p-0.5 hover:bg-white rounded-full transition-colors flex-shrink-0"
-                      >
-                        <X className="w-3.5 h-3.5 text-gray-500" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                      <X className="w-3.5 h-3.5 text-gray-500" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-          {/* Camera Capture */}
-          {imageMode === "TAKE" && (
+          {/* Camera Capture - Commented out as mobile native file picker handles this */}
+          {/* {imageMode === "TAKE" && (
             <div className="bg-white rounded-2xl p-3 shadow-md border border-gray-100">
               <label className="block text-xs font-semibold text-gray-700 mb-2">
                 Capture Image *
@@ -563,7 +565,7 @@ function DocumentUploadDetail() {
 
               <canvas ref={canvasRef} className="hidden" />
             </div>
-          )}
+          )} */}
 
           {/* Submit Button */}
           <button
