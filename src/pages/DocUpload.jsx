@@ -417,54 +417,70 @@ function DocUpload() {
                   )}
 
                   {/* Pending Users */}
-                  {application.pending_users && application.pending_users.length > 0 && (
-                    <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-3 mb-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Users className="w-4 h-4 text-amber-600" />
-                        <span className="text-xs font-semibold text-gray-700">
-                          Pending Users ({application.pending_users.length})
-                        </span>
-                      </div>
-                      <div className="space-y-2">
-                        {application.pending_users.map((user, index) => (
-                          <div key={index} className="bg-white rounded-xl p-2 text-xs">
-                            <p className="font-semibold text-gray-900">{user.name}</p>
-                            <p className="text-gray-600">Role: {user.roles}</p>
-                            {user.modules && user.modules.length > 0 && (
-                              <p className="text-gray-500">
-                                Modules: {user.modules.join(", ")}
+                  {application.pending_users &&
+                    application.pending_users.length > 0 && (
+                      <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-3 mb-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Users className="w-4 h-4 text-amber-600" />
+                          <span className="text-xs font-semibold text-gray-700">
+                            Pending Users ({application.pending_users.length})
+                          </span>
+                        </div>
+                        <div className="space-y-2">
+                          {application.pending_users.map((user, index) => (
+                            <div
+                              key={index}
+                              className="bg-white rounded-xl p-2 text-xs"
+                            >
+                              <p className="font-semibold text-gray-900">
+                                {user.name}
                               </p>
-                            )}
-                          </div>
-                        ))}
+                              <p className="text-gray-600">
+                                Role: {user.roles}
+                              </p>
+                              {user.modules && user.modules.length > 0 && (
+                                <p className="text-gray-500">
+                                  Modules: {user.modules.join(", ")}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
                   {/* Last User */}
-                  {application.last_user && application.last_user.length > 0 && (
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-3 mb-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <UserCheck className="w-4 h-4 text-green-600" />
-                        <span className="text-xs font-semibold text-gray-700">
-                          Last User
-                        </span>
-                      </div>
-                      <div className="space-y-2">
-                        {application.last_user.map((user, index) => (
-                          <div key={index} className="bg-white rounded-xl p-2 text-xs">
-                            <p className="font-semibold text-gray-900">{user.name}</p>
-                            <p className="text-gray-600">Role: {user.roles}</p>
-                            {user.modules && user.modules.length > 0 && (
-                              <p className="text-gray-500">
-                                Modules: {user.modules.join(", ")}
+                  {application.last_user &&
+                    application.last_user.length > 0 && (
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-3 mb-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <UserCheck className="w-4 h-4 text-green-600" />
+                          <span className="text-xs font-semibold text-gray-700">
+                            Last User
+                          </span>
+                        </div>
+                        <div className="space-y-2">
+                          {application.last_user.map((user, index) => (
+                            <div
+                              key={index}
+                              className="bg-white rounded-xl p-2 text-xs"
+                            >
+                              <p className="font-semibold text-gray-900">
+                                {user.name}
                               </p>
-                            )}
-                          </div>
-                        ))}
+                              <p className="text-gray-600">
+                                Role: {user.roles}
+                              </p>
+                              {user.modules && user.modules.length > 0 && (
+                                <p className="text-gray-500">
+                                  Modules: {user.modules.join(", ")}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
                   {/* Date */}
                   <div className="flex items-center gap-2 text-xs text-gray-500 mt-4 pt-4 border-t border-gray-100">
